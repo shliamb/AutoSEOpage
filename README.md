@@ -1,35 +1,47 @@
-«Автоматическая генерация SEO-страниц через цепочку умных промптов. Просто укажите тему – скрипт создаст контент, метатеги и структуру, готовые к публикации.»
+# SEO PageGen AI
 
-Логика работы (цепочка промптов):
-Ввод темы (пользователь указывает ключевой запрос или нишу).
+## Описание
+**Автоматизированное создание SEO-оптимизированных страниц** с помощью интеллектуальной цепочки промптов. Просто задайте тему — система сгенерирует готовый к публикации контент с полной SEO-структурой.
 
-Анализ трендов (ИИ проверяет конкурентов и топовые статьи).
+### Как это работает
+1. **Ввод темы**  
+   Пользователь указывает ключевой запрос или тематику
+2. **Анализ трендов**  
+   ИИ анализирует топовые статьи и конкурентов
+3. **Построение структуры**  
+   Автоматическое создание H1-H3 заголовков и семантического ядра
+4. **Генерация контента**  
+   Написание читабельного текста с LSI-ключами
+5. **SEO-оптимизация**  
+   Подбор метатегов, alt-атрибутов и ЧПУ
+6. **Контроль качества**  
+   Проверка уникальности и тональности текста
+7. **Экспорт**  
+   Вывод в HTML/Markdown или прямая интеграция с CMS
 
-Генерация структуры (H1-H3, семантическое ядро).
+> "От идеи до готовой страницы за 5 минут — без копирайтеров и SEO-специалистов"
 
-Написание контента (текст с LSI-ключами, читабельный для людей).
+---
 
-Оптимизация (метатеги, alt-изображений, URL).
+# SEO PageGen AI 
 
-Проверка уникальности (антиплагиат, тональность).
+## Description
+**Automated SEO-optimized page creation** through an intelligent prompt chain. Just specify a topic — the system will generate publish-ready content with complete SEO structure.
 
-Вывод в HTML/Markdown (или прямо в CMS).
+### How It Works
+1. **Topic Input**  
+   User provides a keyword or subject
+2. **Trend Analysis**  
+   AI examines top articles and competitors
+3. **Structure Building**  
+   Automatic generation of H1-H3 headings and semantic core
+4. **Content Generation**  
+   Writing human-readable text with LSI keywords
+5. **SEO Optimization**  
+   Meta tags, alt attributes and SEO-friendly URLs
+6. **Quality Control**  
+   Plagiarism check and tone analysis
+7. **Export**  
+   HTML/Markdown output or direct CMS integration
 
-
-
-"Automated SEO page generation through a smart prompt chain. Just specify a topic—the script will create content, meta tags, and a ready-to-publish structure."
-
-How It Works (Prompt Chain):
-Topic Input (user provides a keyword or niche).
-
-Trend Analysis (AI checks competitors and top-ranking content).
-
-Structure Generation (H1-H3, semantic core).
-
-Content Writing (human-readable text with LSI keywords).
-
-SEO Optimization (meta tags, image alts, clean URLs).
-
-Quality Check (plagiarism, tone, readability).
-
-Output (HTML/Markdown or direct CMS integration).
+> "From concept to ready-to-rank page in 5 minutes — no copywriters or SEO experts needed"
