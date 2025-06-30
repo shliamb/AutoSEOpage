@@ -1,35 +1,24 @@
 # pip install --upgrade requests
 # pip install requests[socks]
+import json
 import requests
 from system import URL_API_GEMINI, DEFAULT_MODEL_GEMINI
 from keys import ACCESS_ID, API_KEY, VALUE_KEY, PROXY_HTTP, PROXY_SOCKS5H
 
 
 
-def ask_gemini(question: str, system_content: str) -> dict:
+def ask_gemini(question: str, system_content: str, response_type: str) -> dict:
 
     """
-    Sends a prompt to the Gemini AI API and returns the response.
-    
-    This function constructs a properly formatted request to the Gemini API endpoint,
-    including necessary headers and payload data. It handles both successful responses
-    and potential errors during the API communication.
+    Отправляет запрос в Gemini API.
+    Sends request to Gemini API.
 
     Args:
-        question (str): The user's query or prompt to send to Gemini
-        system_content (str): System instructions/context for the AI model
+        question (str): Вопрос / User question
+        system_content (str): Системный промпт / System prompt
 
     Returns:
-        dict: Parsed JSON response from Gemini API on success
-        bool: False if the request fails or encounters an error
-
-    Raises:
-        Prints error message to console but doesn't raise exceptions to caller
-
-    Example:
-        >>> response = ask_gemini("Explain quantum computing", "You are a physics professor")
-        >>> if response:
-        ...     print(response['response'])
+        dict/bool: JSON ответ или False / JSON response or False
     """
     
     headers = {
@@ -43,6 +32,7 @@ def ask_gemini(question: str, system_content: str) -> dict:
         'user_content': (None, question),
         'model': (None, DEFAULT_MODEL_GEMINI),
         'system_content': (None, system_content),
+        'response_format': (None, response_type),
     }
 
     try:
@@ -54,19 +44,36 @@ def ask_gemini(question: str, system_content: str) -> dict:
             timeout=200
         )
 
-        # Check for HTTP errors
         response.raise_for_status()
-        
-        # Attempt to parse JSON response
         return response.json()
     
-    except requests.exceptions.RequestException as e:
-        print(f"Gemini API request failed: {str(e)}")
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"Gemini API error: {e}")
         return False
-    
-    except ValueError as e:
-        print(f"Failed to parse Gemini response: {str(e)}")
-        return False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
