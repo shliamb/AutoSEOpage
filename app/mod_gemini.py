@@ -7,7 +7,7 @@ from keys import ACCESS_ID, API_KEY, VALUE_KEY, PROXY_HTTP, PROXY_SOCKS5H
 
 
 
-def ask_gemini(question: str, system_content: str, response_type: str) -> dict:
+def ask_gemini(question: str, system_content: str, tools: str, tool_config: str) -> dict:
 
     """
     Отправляет запрос в Gemini API.
@@ -32,7 +32,8 @@ def ask_gemini(question: str, system_content: str, response_type: str) -> dict:
         'user_content': (None, question),
         'model': (None, DEFAULT_MODEL_GEMINI),
         'system_content': (None, system_content),
-        'response_format': (None, response_type),
+        'tools': (None, tools),
+        'tool_config': (None, tool_config),
     }
 
     try:
