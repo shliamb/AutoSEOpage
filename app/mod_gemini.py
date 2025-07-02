@@ -1,56 +1,70 @@
 # pip install --upgrade requests
 # pip install requests[socks]
-import json
+# import json
 import requests
-from system import URL_API_GEMINI, DEFAULT_MODEL_GEMINI
+from config import URL_API_GEMINI, DEFAULT_MODEL_GEMINI
 from keys import ACCESS_ID, API_KEY, VALUE_KEY, PROXY_HTTP, PROXY_SOCKS5H
+from prompts import tools_first, tool_config_any
 
 
 
-def ask_gemini(question: str, system_content: str, tools: str, tool_config: str) -> dict:
+class Gemini:
+    def __init__(self):
+        pass
 
-    """
-    Отправляет запрос в Gemini API.
-    Sends request to Gemini API.
+    # MAIN:
+    def ask_gemini(self, question: str, system_content: str, tools: str, tool_config: str) -> dict:
 
-    Args:
-        question (str): Вопрос / User question
-        system_content (str): Системный промпт / System prompt
+        """
+        Отправляет запрос в Gemini API.
+        Sends request to Gemini API.
 
-    Returns:
-        dict/bool: JSON ответ или False / JSON response or False
-    """
-    
-    headers = {
-        API_KEY: VALUE_KEY,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    }
+        Args:
+            question (str): Вопрос / User question
+            system_content (str): Системный промпт / System prompt
 
-    data = {
-        # Content-Type: multipart/form-data
-        'access_id': (None, ACCESS_ID),
-        'user_content': (None, question),
-        'model': (None, DEFAULT_MODEL_GEMINI),
-        'system_content': (None, system_content),
-        'tools': (None, tools),
-        'tool_config': (None, tool_config),
-    }
+        Returns:
+            dict/bool: JSON ответ или False / JSON response or False
+        """
+        
+        headers = {
+            API_KEY: VALUE_KEY,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        }
 
-    try:
-        response = requests.post(
-            URL_API_GEMINI,
-            headers=headers,
-            files=data,
-            proxies=PROXY_SOCKS5H,
-            timeout=200
-        )
+        data = {
+            # Content-Type: multipart/form-data
+            'access_id': (None, ACCESS_ID),
+            'user_content': (None, question),
+            'model': (None, DEFAULT_MODEL_GEMINI),
+            'system_content': (None, system_content),
+            'tools': (None, tools),
+            'tool_config': (None, tool_config),
+        }
 
-        response.raise_for_status()
-        return response.json()
-    
-    except (requests.exceptions.RequestException, ValueError) as e:
-        print(f"Gemini API error: {e}")
-        return False
+        try:
+            response = requests.post(
+                URL_API_GEMINI,
+                headers=headers,
+                files=data,
+                proxies=PROXY_SOCKS5H,
+                timeout=200
+            )
+
+            response.raise_for_status()
+            return response.json()
+        
+        except (requests.exceptions.RequestException, ValueError) as e:
+            print(f"Gemini API error: {e}")
+            return False
+
+
+    def first(self, question: str,):
+        system_content = """
+            Ты опытный SEO специалист. Знаешь как и чем зацепить клиента на сайте.
+            Предлагаешь не стандартные решения. Обладаешь аналитикой и статистикой
+        """
+        return self.ask_gemini(question, system_content, tools_first, tool_config_any)
 
 
 
