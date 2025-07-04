@@ -64,7 +64,7 @@ def main():
         gemi = Gemini()
 
 
-        # 1: Compression raw data / Сжатие сырых данных:
+        # 0: Compression raw data / Сжатие сырых данных:
         system_content = """
             Оптимизируй текст: сократи, убери лишние символы, 
             переносы. Упрости структуру для удобства дальнейшего редактирования. 
@@ -75,7 +75,7 @@ def main():
         out_info(clear_raw, "compresed") # скомпрешеные входные данные
 
 
-        # 2: The target audience / Определение аудитории :
+        # 1: The target audience / Определение аудитории :
         system_content = """
             На основе описания страницы сайта определи портрет целевой аудитории. 
             Проанализируй: 
@@ -86,13 +86,14 @@ def main():
         answer_1 = gemi.gemi_1(clear_raw, system_content)
         tokens, total_cost = tok_cost(tokens, total_cost, answer_1)
         response = answer_1.get("response")
-        demographics = response.get("demographics")
-        anger =  response.get("anger")
-        out_info(demographics, "demographics") # Целевая аудитория
-        out_info(anger, "anger") # Раздражающие факторы данной аудитории
+        demographics = response.get("demographics") # Целевая аудитория
+        anger =  response.get("anger") # Раздражающие факторы данной аудитории
+
+        out_info(demographics, "demographics")
+        out_info(anger, "anger")
 
 
-        # 3. Get Type Page / Тип страницы:
+        # 2. Get Type Page / Тип страницы:
         system_content = """
             На основе описания страницы сайта определи следующие пункты типа, формата и тематического фокуса страницы: 
             1. Определи тип страницы: коммерческая страница, информационная, новостная.
@@ -104,21 +105,61 @@ def main():
         answer_2 = gemi.gemi_2(clear_raw, system_content)
         tokens, total_cost = tok_cost(tokens, total_cost, answer_2)
         response = answer_2.get("response")
-        type_page = response.get("type_page")
-        funnel_stage = response.get("funnel_stage")
-        main_goal = response.get("main_goal")
-        focus = response.get("focus")
-        out_info(type_page, "type_page") # Тип страницы
-        out_info(funnel_stage, "funnel_stage") # Стадия воронки
-        out_info(main_goal, "main_goal") # Основная цель
-        out_info(focus, "focus") # Ключевая тема
+        type_page = response.get("type_page") # Тип страницы
+        funnel_stage = response.get("funnel_stage") # Стадия воронки
+        main_goal = response.get("main_goal") # Основная цель
+        focus = response.get("focus") # Ключевая тема
+
+        out_info(type_page, "type_page")
+        out_info(funnel_stage, "funnel_stage")
+        out_info(main_goal, "main_goal")
+        out_info(focus, "focus")
 
 
-        # answer_3 = gemi.gemi_3(raw + str(answer_2.get("response")))
-        # out_dict(answer_3.get("response"))
+        # 3. Get User's Goals / Цели пользователя страницы:
+        system_content = """
+            1. Угадай, что хочет получить посетитель этой страницы. Какая у него цель?
+            2. Выяви его скрытые страхи и сомнения, которые мотивируют поиск. Перечисли по важности.
+            3. Предложи способы воздействия через контент, чтобы снять сомнения и повысить конверсию.
+            Отвечай кратко, по пунктам, без лишних объяснений.
+        """
 
-        # answer_4 = gemi.gemi_4(raw + str(answer_3.get("response")))
-        # out_list(answer_4.get("response"))
+        custom_query = f"О странице: {clear_raw}\nАудитория: {demographics}\nТип страницы: {type_page}\nОсновная цель контента по отношению к читающему: {main_goal}\nКлючевая тема: {focus}" 
+        print(custom_query)
+
+        answer_3 = gemi.gemi_3(custom_query, system_content)
+        tokens, total_cost = tok_cost(tokens, total_cost, answer_3)
+        response = answer_3.get("response")
+        goals = response.get("goals") # Угаданные цели посетителя сайта
+        fears = response.get("fears") # Страхи посетителя, из за которых он все еще ищет
+        benefit = response.get("benefit") # Решения текстом
+
+        out_info(goals, "goals")
+        out_info(fears, "fears")
+        out_info(benefit, "benefit")
+
+
+        # 4. Keyword Collection / Сбор ключевых слов:
+        system_content = (
+            "Сбор ключевых слов (SEO-ядро):"
+            "Определи основные ключевые запросы для страницы (включая высоко- и низкочастотные)."
+            "Добавь длинные хвосты (long-tail) — более конкретные и менее конкурентные фразы."
+            #"Учитывай разные интенты пользователей (например: «купить», «сравнить», «как сделать», «отзывы»)."
+            "Приоритет гео-запросам в коммерческих и новостных сайтах: если есть адрес/город — делай ответ максимально конкретным, с привязкой к локации."
+            "Держи список четким: только релевантные слова без дублей и мусора."
+        )
+
+        custom_query = f"О странице: {clear_raw}\n"
+        print(custom_query)
+
+        answer_4 = gemi.gemi_4(custom_query, system_content)
+        tokens, total_cost = tok_cost(tokens, total_cost, answer_4)
+        response = answer_4.get("response")
+        keywords = response.get("keywords") # Список ключевых слов страницы
+
+        out_info(keywords, "keywords")
+
+
 
         # answer_5 = gemi.gemi_5(raw + str(answer_1.get("response")) + str(answer_2.get("response")) + str(answer_3.get("response")))
         # out_dict(answer_5.get("response"))
