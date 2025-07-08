@@ -154,21 +154,33 @@ tools_5 = json.dumps([
 ])
 
 
+
+
+
+
 tools_6 = json.dumps([
     {
         "function_declarations": [
             {
                 "name": "mainset",
-                "description": "Выбрать основную манеру общения с аудиторией. Json. Ответ должен быть четким, структурированным и без лишней информации",
+                "description": "Написать текст для страницы. Json.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "ton": {
-                            "description": "Определение тональности и стиля коммуникации бренда для сайта",
+                        "main_content": {
+                            "description": "Напиши SEO текст по вводным параметрам.",
+                            "type": "string"
+                        },
+                        "description": {
+                            "description": "Напиши description для html страницы сайта",
+                            "type": "string"
+                        },
+                        "title": {
+                            "description": "Напиши title для html страницы сайта.",
                             "type": "string"
                         }
                     },
-                    "required": ["ton"]
+                    "required": ["main_content", "description", "title"]
                 }
             },
          ]

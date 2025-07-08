@@ -89,8 +89,8 @@ def main():
         demographics = response.get("demographics") # Целевая аудитория
         anger =  response.get("anger") # Раздражающие факторы данной аудитории
 
-        out_info(demographics, "demographics")
-        out_info(anger, "anger")
+        # out_info(demographics, "demographics")
+        # out_info(anger, "anger")
 
 
         # 2. Get Type Page / Тип страницы:
@@ -107,13 +107,13 @@ def main():
         response = answer_2.get("response")
         type_page = response.get("type_page") # Тип страницы
         funnel_stage = response.get("funnel_stage") # Стадия воронки
-        main_goal = response.get("main_goal") # Основная цель
+        main_goal = response.get("main_goal") # Основная цель страницы
         focus = response.get("focus") # Ключевая тема
 
-        out_info(type_page, "type_page")
-        out_info(funnel_stage, "funnel_stage")
-        out_info(main_goal, "main_goal")
-        out_info(focus, "focus")
+        # out_info(type_page, "type_page")
+        # out_info(funnel_stage, "funnel_stage")
+        # out_info(main_goal, "main_goal")
+        # out_info(focus, "focus")
 
 
         # 3. Get User's Goals / Цели пользователя страницы:
@@ -125,7 +125,7 @@ def main():
         """
 
         custom_query = f"О странице: {clear_raw}\nАудитория: {demographics}\nТип страницы: {type_page}\nОсновная цель контента по отношению к читающему: {main_goal}\nКлючевая тема: {focus}" 
-        print(custom_query)
+        #print(custom_query)
 
         answer_3 = gemi.gemi_3(custom_query, system_content)
         tokens, total_cost = tok_cost(tokens, total_cost, answer_3)
@@ -134,9 +134,9 @@ def main():
         fears = response.get("fears") # Страхи посетителя, из за которых он все еще ищет
         benefit = response.get("benefit") # Решения текстом
 
-        out_info(goals, "goals")
-        out_info(fears, "fears")
-        out_info(benefit, "benefit")
+        # out_info(goals, "goals")
+        # out_info(fears, "fears")
+        # out_info(benefit, "benefit")
 
 
         # 4. Keyword Collection / Сбор ключевых слов:
@@ -150,22 +150,82 @@ def main():
         )
 
         custom_query = f"О странице: {clear_raw}\n"
-        print(custom_query)
+        #print(custom_query)
 
         answer_4 = gemi.gemi_4(custom_query, system_content)
         tokens, total_cost = tok_cost(tokens, total_cost, answer_4)
         response = answer_4.get("response")
         keywords = response.get("keywords") # Список ключевых слов страницы
 
-        out_info(keywords, "keywords")
+        # out_info(keywords, "keywords")
 
 
 
-        # answer_5 = gemi.gemi_5(raw + str(answer_1.get("response")) + str(answer_2.get("response")) + str(answer_3.get("response")))
-        # out_dict(answer_5.get("response"))
+        # 5. Developing a plan / Разработка плана:
+        system_content = """
+            Разработка плана/сценария + CTA:
+            Создай четкую структуру с вовлекающим началом и логичным развитием.
+            Захвати внимание: используй сильный крючок (интрига, вопрос, неожиданный факт или эмоциональный образ).
+            Развивай логику: проблема → решение → выгоды (можно через сторителлинг, данные или экспертные мнения).
+            Добавь доказательства: реальные примеры, кейсы, цитаты или статистику для доверия.
+            Включи 3 варианта CTA (основной, альтернативный, срочный) – например:
+            Основной: «Скачать инструкцию сейчас»
+            Альтернативный: «Подписаться на обновления»
+            Срочный: «Зарегистрируйтесь до [дата], чтобы получить бонус».
+            Без воды: только конкретика, понятные шаги и выгоды для читателя.
+        """
 
-        # answer_6 = gemi.gemi_6(raw + str(answer_5.get("response")))
-        # out_dict(answer_6.get("response"))
+        custom_query = f"О странице: {clear_raw}\n"
+        #print(custom_query)
+
+        answer_5 = gemi.gemi_5(custom_query, system_content)
+        tokens, total_cost = tok_cost(tokens, total_cost, answer_5)
+
+        response = answer_5.get("response")
+        plan_main = response.get("plan_main")
+        plan_text = response.get("plan_text")
+        plan_href = response.get("plan_href")
+        plan_ui = response.get("plan_ui")
+        plan_media = response.get("plan_media")
+
+        # out_info(plan_main, "plan_main")
+        # out_info(plan_text, "plan_text")
+        # out_info(plan_href, "plan_href")
+        # out_info(plan_ui, "plan_ui")
+        # out_info(plan_media, "plan_media")
+
+
+        # 6. Writing a text / Написание текста:
+        system_content = f"""
+            Написать SEO текст для страницы сайта. 
+            Колличество слов должно соотвествовать категории страницы сайта - {type_page},
+            Целевая аудитория сайта - {demographics},
+            Внутренние страхи такой удитории - {anger},
+            Основная цель страницы - {main_goal},
+            Ключевая тема текста - {focus},
+            Возможные желания читателя от страницы - {goals},
+            Основные страхи читателя, которые движат им - {fears},
+            Возможные подходы решений его страхов в тексте - {benefit},
+            Ключевые слова, которые желательно использовать в SEO тексте - {keywords},
+            План для написания текста - {plan_text}
+        """
+        print(f"\n{system_content}\n")
+
+        custom_query = f"О странице: {clear_raw}\n"
+        #print(custom_query)
+
+        answer_6 = gemi.gemi_6(custom_query, system_content)
+        tokens, total_cost = tok_cost(tokens, total_cost, answer_6)
+
+        response = answer_6.get("response")
+        main_content = response.get("main_content")
+        description = response.get("description")
+        title = response.get("title")
+
+        out_info(main_content, "main_content")
+        out_info(description, "description")
+        out_info(title, "title")
+
 
         return {"complete": True, "used_tokens": tokens, "total_cost": total_cost}
     
