@@ -68,7 +68,7 @@ def gemini_gen_text(raw: str, dialog: list, tokens: int, total_cost: int) -> tup
             """,
             "tools": gen_seo_text,
             "tool_config": tool_config_any, 
-            "model": "gemini-2.0-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
+            "model": "gemini-2.5-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
             "dialog": json.dumps(dialog) if dialog else None
         }
 
@@ -109,11 +109,12 @@ def gemini_check(dialog: list, tokens: int, total_cost: int) -> tuple:
                 Сделай ревью последнего написанного текста страницы сайта. Дай ответ True - текст удовлетворителен 
                 или False - текст нужно переписать.
                 Дай конкретные и точные недочеты и ошибки, что бы их возможно было исправить. Дай заметку что хорошо - оставить, 
-                что поменять и только реалистичные задачи. Что то типа - похоже, мне кажется не нужно.
+                что поменять и только реалистичные задачи.
+                Не придирайся по пустякам.
             """,
             "tools": checking,
             "tool_config": tool_config_any, 
-            "model": "gemini-2.0-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
+            "model": "gemini-2.5-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
             "dialog": json.dumps(dialog) if dialog else None
         }
 
@@ -132,7 +133,7 @@ def gemini_check(dialog: list, tokens: int, total_cost: int) -> tuple:
         annotation = answer_gemini.get("annotation")
 
         # В историю общения ответ ии
-        dialog.append({"assistant_2": f"Решение assistant_2 о принятии или браковке текста: {acceptance}, Описание проблем и пути их решения: {annotation}"})
+        #dialog.append({"assistant_2": f"Решение assistant_2 о принятии или браковке текста: {acceptance}, Описание проблем и пути их решения: {annotation}"})
 
 
         out_info(acceptance, "acceptance")
@@ -180,14 +181,21 @@ def main():
 
         answer, dialog, tokens, total_cost = gemini_check(dialog, tokens, total_cost)
 
+        acceptance = answer.get("acceptance")
+        annotation = answer.get("annotation")
 
-        if answer.get("acceptance"):
+        if acceptance:
+            print("\n")
             return {"answer": answer_gen_text_seo, "tokens": tokens, "total_cost": total_cost}
 
         i += 1
 
-        if i > 5:
+        if i > 3:
+            print("\n")
             return {"answer": answer_gen_text_seo, "tokens": tokens, "total_cost": total_cost}
+        
+        raw = annotation
+
 
 answer = main()
 print(answer)
