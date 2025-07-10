@@ -4,104 +4,113 @@
 import requests
 from config import URL_API_GEMINI, DEFAULT_MODEL_GEMINI
 from keys import ACCESS_ID, API_KEY, VALUE_KEY, PROXY_HTTP, PROXY_SOCKS5H
-from prompts import tools_1, tools_2, tools_3, tools_4, tools_5, tools_6, tool_config_any
+from common import DictObj
 
 
 
-class Gemini:
-    def __init__(self):
-        """Инициализация Gemini клиента."""
-
-    # The Main Query to Google / Основной запрос к API и к Google:
-    def ask_gemini(self, question: str, system_content: str, tools: str = None, tool_config: str = None) -> dict:
-
-        """
-        RU: Основной запрос API к Google через сторонний API Telegramm -> @myapi_aibot (для стран под санкциями)
-
-        EN: The main API request to Google is via a third-party Telegram API -> @myapi_aimbot (for countries under sanctions)
-        """
-
-        headers = {
-            API_KEY: VALUE_KEY,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        }
-
-        data = {
-            # Content-Type: multipart/form-data
-            'access_id': (None, ACCESS_ID),
-            'user_content': (None, question),
-            'model': (None, DEFAULT_MODEL_GEMINI),
-            'system_content': (None, system_content),
-            'tools': (None, tools),
-            'tool_config': (None, tool_config),
-        }
-
-        try:
-            response = requests.post(
-                URL_API_GEMINI,
-                headers=headers,
-                files=data,
-                proxies=PROXY_SOCKS5H,
-                timeout=200
-            )
-
-            response.raise_for_status()
-            return response.json()
-        
-        except (requests.exceptions.RequestException, ValueError) as e:
-            print(f"Gemini API error: {e}")
-            return False
-
-    # 0: Compression Raw Data / Сжатие сырых данных:
-    def gemi_0(self, question: str, system_content: str) -> dict:
-        return self.ask_gemini(question, system_content)
-
-    # 1: The Target Audience / Определение аудитории :
-    def gemi_1(self, question: str, system_content: str) -> dict:
-        return self.ask_gemini(question, system_content, tools_1, tool_config_any)
-
-    # 2. Get Type Page / Тип страницы:
-    def gemi_2(self, question: str, system_content: str) -> dict:
-        return self.ask_gemini(question, system_content, tools_2, tool_config_any)
-    
+# The Main Query to Google / Основной запрос к API и к Google:
+def ask_gemini(request_data: dict) -> dict:
 
     """
-        Анализ контекста и конкурентов, API поисковиков  - позже, подвопросом !!!!
-        Задача: Изучить топ-5 конкурентов, их сильные/слабые стороны.
-        Пример для ИИ:
-        "Проанализируй тексты конкурентов по запросу 'доставка здорового питания Москва'. Какие выгоды они выделяют (экономия времени, пп-меню)? Какие возражения не закрывают (цена, вкус)?"
+    RU: Основной запрос API к Google через сторонний API Telegramm -> @myapi_aibot (для стран под санкциями)
+
+    EN: The main API request to Google is via a third-party Telegram API -> @myapi_aimbot (for countries under sanctions)
     """
 
+    dict_des = DictObj(request_data)
+    question = dict_des.question
+    system_content = dict_des.system_content or None
+    tools = dict_des.tools or None
+    tool_config = dict_des.tool_config or None
+    model = dict_des.model or None
+    dialog = dict_des.dialog or None
 
-    # 3. Get User's Goals / Цели пользователя:
-    def gemi_3(self, question: str, system_content: str) -> dict:
-        return self.ask_gemini(question, system_content, tools_3, tool_config_any)
+    headers = {
+        API_KEY: VALUE_KEY,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    }
 
-    # 4. Keyword Collection / Сбор ключевых слов:
-    def gemi_4(self, question: str, system_content: str) -> dict:
-        return self.ask_gemini(question, system_content, tools_4, tool_config_any)
+    data = {
+        # Content-Type: multipart/form-data
+        'access_id': (None, ACCESS_ID),
+        'user_content': (None, question),
+        'model': (None, model or DEFAULT_MODEL_GEMINI),
+        'system_content': (None, system_content),
+        'tools': (None, tools),
+        'tool_config': (None, tool_config),
+        'assist_content': (None, dialog)
+    }
+
+    try:
+        response = requests.post(
+            URL_API_GEMINI,
+            headers=headers,
+            files=data,
+            proxies=PROXY_SOCKS5H,
+            timeout=200
+        )
+
+        response.raise_for_status()
+        return response.json()
     
-    # 5. Developing a plan / Разработка плана:
-    def gemi_5(self, question: str, system_content: str) -> dict:
-        return self.ask_gemini(question, system_content, tools_5, tool_config_any)
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"Gemini API error: {e}")
+        return False
+
+
+
+
+
+    # # 0: Compression Raw Data / Сжатие сырых данных:
+    # def gemi_0(self, request_data: dict) -> dict:
+    #     return self.ask_gemini(question, system_content, model)
+
+    # # 1: The Target Audience / Определение аудитории :
+    # def gemi_1(self, question: str, system_content: str, model: str = None, dialog: str = None) -> dict:
+    #     return self.ask_gemini(question, system_content, tools_1, tool_config_any, model)
+
+    # # 2. Get Type Page / Тип страницы:
+    # def gemi_2(self, question: str, system_content: str, model: str = None, dialog: str = None) -> dict:
+    #     return self.ask_gemini(question, system_content, tools_2, tool_config_any, model)
     
 
-    # # Определение тональности и стиля коммуникации бренда для сайта:
-    # def gemi_6(self, question: str):
-    #     system_content = """
-    #         Выбрать основную манеру общения с аудиторией (экспертная, дружелюбная, официальная, вдохновляющая, нейтральная и т. д.) с учетом специфики бизнеса/ресурса и целевой аудитории.
-    #         Ключевые аспекты:
-    #         Уровень формальности (строгий/непринужденный)
-    #         Эмоциональная окраска (теплый/сдержанный/мотивирующий)
-    #         Степень экспертности (простое объяснение/узкоспециализированные термины)
-    #     """
-    #     return self.ask_gemini(question, system_content, tools_6, tool_config_any)
+    # """
+    #     Анализ контекста и конкурентов, API поисковиков  - позже, подвопросом !!!!
+    #     Задача: Изучить топ-5 конкурентов, их сильные/слабые стороны.
+    #     Пример для ИИ:
+    #     "Проанализируй тексты конкурентов по запросу 'доставка здорового питания Москва'. Какие выгоды они выделяют (экономия времени, пп-меню)? Какие возражения не закрывают (цена, вкус)?"
+    # """
+
+
+    # # 3. Get User's Goals / Цели пользователя:
+    # def gemi_3(self, question: str, system_content: str, model: str = None, dialog: str = None) -> dict:
+    #     return self.ask_gemini(question, system_content, tools_3, tool_config_any, model)
+
+    # # 4. Keyword Collection / Сбор ключевых слов:
+    # def gemi_4(self, question: str, system_content: str, model: str = None, dialog: str = None) -> dict:
+    #     return self.ask_gemini(question, system_content, tools_4, tool_config_any, model)
+    
+    # # 5. Developing a plan / Разработка плана:
+    # def gemi_5(self, question: str, system_content: str, model: str = None, dialog: str = None) -> dict:
+    #     return self.ask_gemini(question, system_content, tools_5, tool_config_any, model)
+    
+
+    # # # Определение тональности и стиля коммуникации бренда для сайта:
+    # # def gemi_6(self, question: str):
+    # #     system_content = """
+    # #         Выбрать основную манеру общения с аудиторией (экспертная, дружелюбная, официальная, вдохновляющая, нейтральная и т. д.) с учетом специфики бизнеса/ресурса и целевой аудитории.
+    # #         Ключевые аспекты:
+    # #         Уровень формальности (строгий/непринужденный)
+    # #         Эмоциональная окраска (теплый/сдержанный/мотивирующий)
+    # #         Степень экспертности (простое объяснение/узкоспециализированные термины)
+    # #     """
+    # #     return self.ask_gemini(question, system_content, tools_6, tool_config_any)
 
 
 
-    # 6. Writing a text / Написание текста:
-    def gemi_6(self, question: str, system_content: str) -> dict:
-        return self.ask_gemini(question, system_content, tools_6, tool_config_any)
+    # # 6. Writing a text / Написание текста:
+    # def gemi_6(self, question: str, system_content: str, model: str = None, dialog: str = None) -> dict:
+    #     return self.ask_gemini(question, system_content, tools_6, tool_config_any, model)
 
 
 
