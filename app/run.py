@@ -1,204 +1,203 @@
 import json
+import logging
+logging.basicConfig(level=logging.INFO)
 from mod_gemini import ask_gemini
-from prompts import tool_config_any, gen_seo_text, checking
+from common import DictObj
+from prompts import tool_config_any, gen_seo_text, system_check, system_con_gen_text, checking
 
 
 
 # For Testing app data  Printing Information in Terminal:
+# Удалить это гавно позже, когда видеть процесс уже не нужно будет
 def out_info(data, who: str = None):
     in_who = f"{who}: " if who else ""
 
     if isinstance(data, dict):
         for key, value in data.items():
-            print(f"\n{key}: {value}")
+            logging.info(f"\n{key}: {value}")
 
     elif isinstance(data, list):
-        print(f"\n{in_who}{data}")
+        logging.info(f"\n{in_who}{data}")
 
     elif isinstance(data, str):
-        print(f"\n{in_who}{data}")
+        logging.info(f"\n{in_who}{data}")
+
 
 
 # Saving Tokens and total cost:
-def tok_cost(tokens, total_cost, answer):
-    tokens += answer.get("used_tokens")
-    total_cost += answer.get("expenses")
-    return tokens, total_cost
+def tok_cost(current_tokens: int, current_cost: float, answer: dict):
 
-
-
-
-
-def gemini_gen_text(raw: str, dialog: list, tokens: int, total_cost: int) -> tuple:
+    if not isinstance(answer, dict):
+        raise TypeError("Response must be a dictionary")
 
     try:
-        request_data = {
-            "question": raw,
-            "system_content": """
-                Задача:  
-                Создай SEO-оптимизированный HTML-контент для страницы сайта. Выполняй следующие требования:
-
-                    1. Структура текста (в зависимости от типа страницы):  
-                        - Коммерческая (услуги, товары, лендинг): 500–1000 слов  
-                        - Информационная (блог, статья, гайд, обзор): 1000–2500 слов  
-                        - Новостная (анонс, короткая статья): 300–800 слов
-
-                    2. SEO-требования:  
-                        - Текст должен отвечать на основное намерение пользователя  
-                        - Собери релевантное семантическое ядро: ключевые слова (включая геозапросы, если применимо). Оформи в JSON, без дублей и нерелевантных слов  
-                        - Основное ключевое слово должно входить в ключевые фразы
-
-                    - Подготовь:
-                        - title — короткий, точный, SEO-оптимизированный заголовок (в JSON)  
-                        - description — мета-описание страницы по SEO-стандартам (в JSON)
-
-                    - Без спама, без слов типа «лучший», «надежный», «дешевый» и без обещаний  
-                    - Избегай «воды» — контент должен быть конкретным и полезным  
-                    - H1 обязателен — лаконичный, в тему  
-                    - Соблюдай SEO-структуру: заголовки h1–h3, логичная структура  
-                    - Укажи места для картинки и одного видео в тексте (в виде <img> и <video> с title и alt) — продумать контекст для мультимедиа
-
-                    3. Формат вывода:  
-                        - Основной текст — в HTML, только содержимое <body>, без <html>, <head> и стилей  
-                        - Ключевые слова, title и description — в JSON  
-                        - Не добавляй иконки, эмодзи и избыточное оформление
-
-                Важно:  
-                Придерживайся норм по SEO, структурной логики, релевантности и фактической пользы для пользователя.
-            """,
-            "tools": gen_seo_text,
-            "tool_config": tool_config_any, 
-            "model": "gemini-2.5-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
-            "dialog": json.dumps(dialog) if dialog else None
-        }
-
-        # Запрос к Ai
-        answer = ask_gemini(request_data)
-        # Токены и цена
-        tokens, total_cost = tok_cost(tokens, total_cost, answer)
-        answer_gemini = answer.get("response")
-
-        seo_text = answer_gemini.get("seo_text")
-        keywords = answer_gemini.get("keywords")
-        description = answer_gemini.get("description")
-        title = answer_gemini.get("title")
-
-        # В историю общения ответ ии
-        dialog.append({"assistant_1": f"Текст: {seo_text}, keywords: {json.dumps(keywords, ensure_ascii=False)}, description: {description}, title: {title}"})
-
-        out_info(seo_text, "seo_text")
-        out_info(keywords, "keywords") 
-        out_info(description, "description")
-        out_info(title, "title") 
-
-        return answer_gemini, dialog, tokens, total_cost
-
-    except Exception as e:
-        out_info(f"Error: {e}", "System 1")
-        return False
-
-
-
-
-def gemini_check(dialog: list, tokens: int, total_cost: int) -> tuple:
-
-    try:
-        request_data = {
-            "question": "Проверь последнюю версию SEO текста, keywords, description от assistant_1",
-            "system_content": """
-                Сделай ревью последнего написанного текста страницы сайта. Дай ответ True - текст удовлетворителен 
-                или False - текст нужно переписать.
-                Дай конкретные и точные недочеты и ошибки, что бы их возможно было исправить. Дай заметку что хорошо - оставить, 
-                что поменять и только реалистичные задачи.
-                Не придирайся по пустякам.
-            """,
-            "tools": checking,
-            "tool_config": tool_config_any, 
-            "model": "gemini-2.5-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
-            "dialog": json.dumps(dialog) if dialog else None
-        }
-
-        # Запрос к Ai
-        answer = ask_gemini(request_data)
-
-        # print("--------------")
-        # print(answer)
-        # print("--------------")
-
-        # Токены и цена
-        tokens, total_cost = tok_cost(tokens, total_cost, answer)
-        answer_gemini = answer.get("response")
-
-        acceptance = answer_gemini.get("acceptance")
-        annotation = answer_gemini.get("annotation")
-
-        # В историю общения ответ ии
-        #dialog.append({"assistant_2": f"Решение assistant_2 о принятии или браковке текста: {acceptance}, Описание проблем и пути их решения: {annotation}"})
-
-
-        out_info(acceptance, "acceptance")
-        out_info(annotation, "annotation") 
-
-        return answer_gemini, dialog, tokens, total_cost
-
-    except Exception as e:
-        out_info(f"Error: {e}", "System 2")
-        return False
-
-# [{"user": "Привет, меня зовут Алекс."}, {"assistant": "Очень приятно Алекс, я Ева."}, {"user": "Мне 40 лет."}, {"assistant": "Ты в самом расвете сил!"}]
-
-
-
-
-
-
-        # return {"complete": True, "used_tokens": tokens, "total_cost": total_cost}
+        tokens_used = answer["used_tokens"]
+        expenses = answer["expenses"]
+        
+        if not isinstance(tokens_used, (int, float)) or not isinstance(expenses, (int, float)):
+            raise TypeError("Token and expense values must be numeric")
+            
+        return current_tokens + int(tokens_used), current_cost + float(expenses)
     
-    # except Exception as e:
-    #     out_info(f"Error: {e}", "System")
-    #     return False
+    except KeyError as e:
+        raise KeyError(f"Missing required key in response: {e}")
 
 
+
+
+def request_gemini(data: dict) -> dict:
+    """
+    Отправляет запрос к Gemini API и возвращает ответ с информацией о токенах и стоимости.
+    
+    Args:
+        data: Словарь с данными запроса, должен содержать 'total_cost' и 'tokens'
+    
+    Returns:
+        Dict с ответом от Gemini или None в случае ошибки
+    """
+
+    if not isinstance(data, dict):
+        logging.error("Invalid input: data must be a dictionary")
+        return None
+
+    total_cost, tokens = data.get("total_cost"), data.get("tokens")
+
+    try:
+        # Запрос к AI
+        answer = ask_gemini(data)
+        if not answer:
+            logging.warning("Empty response from Gemini API")
+            return None
+        
+        # Обновляем токены и цену
+        updated_tokens, updated_cost = tok_cost(tokens, total_cost, answer)
+        
+        # Получаем основной ответ
+        response_data = answer.get("response", {})
+        if not response_data:
+            logging.warning("No 'response' field in Gemini answer")
+            return None
+        
+        # Добавляем метаинформацию
+        response_data.update({
+            "tokens": updated_tokens,
+            "total_cost": updated_cost
+        })
+        
+        return response_data
+        
+    except Exception as e:
+        logging.error(f"Error in request_gemini: {e}")
+        return None
+
+
+
+
+MAX_ITERATIONS = 4
 
 def main():
-    """Запуск цепочки запросов"""
-    intro_queshen = "\nRU: Дайте описание страницы сайта которую нужно сгенерировать:\nEN: Give a description of the site page that needs to be generated:\n"
-    out_info(f"{intro_queshen}", "")
-    raw = input()
-    dialog = [{"user": raw}]
-    tokens = 0
-    total_cost = 0
+    """Генерирует SEO-текст для страницы сайта"""
 
-    i = 1
+    # Получение пользовательского запроса
+    logging.info("RU: Дайте описание страницы сайта которую нужно сгенерировать:")
+    logging.info("EN: Give a description of the site page that needs to be generated:\n")
+    query = input().strip()
 
-    while True:
+    if not query:
+        logging.error("Пустой запрос")
+        return None
 
-        print(f"Генерация текста {i} ----------")
 
-        answer_gen_text_seo, dialog, tokens, total_cost = gemini_gen_text(raw, dialog, tokens, total_cost)
+    tokens, total_cost, dialog = 0, 0, []
 
-        print(f"Переделка {i} ----------")
 
-        answer, dialog, tokens, total_cost = gemini_check(dialog, tokens, total_cost)
+    for iteration in range(1, MAX_ITERATIONS + 1):
+        logging.info(f"Итерация {iteration}/max {MAX_ITERATIONS}")
+        
 
-        acceptance = answer.get("acceptance")
-        annotation = answer.get("annotation")
+
+        #### 1. Генерирует Текст:
+        data_gen_text = {
+            "question": query,
+            "system_content": system_con_gen_text,
+            "tools": gen_seo_text,
+            "tool_config": tool_config_any,
+            "model": "gemini-2.5-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
+            "dialog": json.dumps(dialog, ensure_ascii=False) if dialog else None,
+            "tokens": tokens,
+            "total_cost": total_cost
+        }
+
+        logging.info(f"\n!!!!!\n{data_gen_text}\n")
+
+        # Запрос к ИИ:
+        answer_gen_text = request_gemini(data_gen_text)
+        if not answer_gen_text:
+            return False
+        
+        an_class = DictObj(answer_gen_text)
+        seo_text, keywords, description, title, tokens, total_cost = an_class.seo_text, an_class.keywords, an_class.description, an_class.title, an_class.tokens, an_class.total_cost
+
+        # Добавление запроса пользователя в историю диалога:
+        dialog.append({"user": query})
+
+        # Добавление ответа ИИ в историю диалога:
+        answer_ai = f"Полученный текст: {seo_text}, keywords: {json.dumps(keywords, ensure_ascii=False)}, description: {description}, title: {title}"
+        dialog.append({"assistant": answer_ai})
+        ####
+
+
+
+
+
+        #### 2. Проверка и вердикт:
+        data_check = {
+            "question": answer_ai,
+            "system_content": system_check,
+            "tools": checking,
+            "tool_config": tool_config_any,
+            "model": "gemini-2.5-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
+            "dialog": json.dumps(dialog, ensure_ascii=False) if dialog else None,
+            "tokens": tokens,
+            "total_cost": total_cost
+        }
+
+        # Запрос к ИИ
+        answer_check = request_gemini(data_check)
+        if not answer_check:
+            return False
+        
+        answ = DictObj(answer_check)
+        acceptance, annotation, tokens, total_cost = answ.acceptance, answ.annotation, answ.tokens, answ.total_cost
 
         if acceptance:
-            print("\n")
-            return {"answer": answer_gen_text_seo, "tokens": tokens, "total_cost": total_cost}
+            return {"Анотации": annotation, "Полученный текст": {seo_text}, "keywords": {json.dumps(keywords, ensure_ascii=False)}, "description": {description}, "title": {title}}
 
-        i += 1
 
-        if i > 3:
-            print("\n")
-            return {"answer": answer_gen_text_seo, "tokens": tokens, "total_cost": total_cost}
+        # Добавление запроса пользователя/агента в историю диалога:
+        dialog.append({"user": annotation})
+
+        # Добавление ответа ИИ в историю диалога:
+        dialog.append({"assistant": f"Полученный текст: {seo_text}, keywords: {json.dumps(keywords, ensure_ascii=False)}, description: {description}, title: {title}"})
         
-        raw = annotation
+        query = annotation
+        
+        ####
 
 
-answer = main()
-print(answer)
+
+
+if __name__ == "__main__":
+    try:
+        result = main()
+        if result:
+            logging.info(f"Результат: {result}")
+        else:
+            logging.error("Не удалось получить результат")
+    except KeyboardInterrupt:
+        logging.info("Прервано пользователем")
+    except Exception as e:
+        logging.error(f"Критическая ошибка: {e}")
 
 
 

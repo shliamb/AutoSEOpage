@@ -61,6 +61,35 @@ def ask_gemini(request_data: dict) -> dict:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # # 0: Compression Raw Data / Сжатие сырых данных:
     # def gemi_0(self, request_data: dict) -> dict:
     #     return self.ask_gemini(question, system_content, model)
