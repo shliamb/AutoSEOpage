@@ -1,5 +1,6 @@
 # pip install --upgrade requests
 # pip install requests[socks]
+
 # import json
 import requests
 from config import URL_API_GEMINI, DEFAULT_MODEL_GEMINI
