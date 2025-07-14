@@ -1,3 +1,4 @@
 /venv
 .env
-/app/__pycache__/
+/app/test.py
+/app/__pycache__
