@@ -8,18 +8,18 @@
 ### ⚙️ Быстрый старт
 
 #### Клонируем репозиторий
-git clone https://github.com/shliamb/AutoSEOpage.git
-cd <имя конечной папки>
+> git clone https://github.com/shliamb/AutoSEOpage.git
 
 #### Создаем виртуальное окружение (Python >= 3.9)
-python -m venv venv
-source venv/bin/activate    # или .\venv\Scripts\activate на Windows
+> python -m venv venv
+> source venv/bin/activate
+> .\venv\Scripts\activate на Windows
 
 #### Устанавливаем зависимости
-pip install -r requirements.txt
+> pip install -r requirements.txt
 
 #### Запускаем генерацию
-python run.py
+> python run.py
 
 
 ---
@@ -61,11 +61,18 @@ python run.py
 
 Всё основное настраивается через config.py, включая:
 
-DEFAULT_MODEL_GEMINI = "gemini-2.5-flash"    // Выбор модели: "gemini-2.0", "gemini-2.5", "gemini-2.5-pro"
-MAX_ITERATIONS = 2                           // Кол-во переоценок-рерайтов текста
-OUTPUT_FORMAT = "MARKDOWN"                   // Варианты: "markdown", "html", "plain"
+DEFAULT_MODEL_GEMINI = "gemini-2.5-flash"
+> Выбор модели: "gemini-2.0", "gemini-2.5", "gemini-2.5-pro"
+
+MAX_ITERATIONS = 2
+> Кол-во переоценок-рерайтов текста
+
+OUTPUT_FORMAT = "MARKDOWN"
+> Варианты: "markdown", "html", "plain"
+
 
 Так же, нужно заполнить .env по примеру .env-test. Аккаунт API можно зарегать тут - [@myapi_aibot](https://t.me/myapi_aibot)
+
 ---
 
 ### 📚 Пример запуска
