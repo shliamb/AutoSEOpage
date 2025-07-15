@@ -1,8 +1,11 @@
+import re
+import os
 import json
 import logging
+from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 from mod_gemini import ask_gemini
-from config import MAX_ITERATIONS, DEFAULT_MODEL_GEMINI
+from config import MAX_ITERATIONS, DEFAULT_MODEL_GEMINI, OUTPUT
 from common import DictObj
 from prompts import tool_config_any, gen_seo_text, system_check, system_con_gen_text, checking, system_plan, gen_plan
 
@@ -10,10 +13,6 @@ from prompts import tool_config_any, gen_seo_text, system_check, system_con_gen_
 
 
 def request_gemini(data: dict) -> dict:
-    """
-    Отправляет запрос к Gemini API и возвращает ответ с информацией о токенах и стоимости.
-
-    """
 
     if not isinstance(data, dict):
         logging.error("Invalid input: data must be a dictionary")
@@ -46,10 +45,52 @@ def request_gemini(data: dict) -> dict:
 
 
 
+def clear_dash(text):
+    return re.sub(r'[—–]', '-', text)  # заменяет как "—" (длинное тире), так и "–" (среднее тире)
+
+
+
+def save_file(annotation, seo_text, keywords, description, title, tokens, total_cost):
+    try:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"{OUTPUT}gen_seo_text_{timestamp}.txt"
+
+        ending_content = f"""
+        Результат генерации контента ИИ ({DEFAULT_MODEL_GEMINI}):
+
+        1. Текст:
+        {seo_text}
+        ------------------------------------------------------
+
+        2. Описание страницы (description):
+        {description}
+        ------------------------------------------------------
+
+        3. Заголовок страницы в браузере (title):
+        {title}
+        ------------------------------------------------------
+
+        4. Ключевые слова (keywords):
+        {keywords}
+        ------------------------------------------------------
+
+        5. Анотации проверяющего ИИ:
+        {annotation}
+        ------------------------------------------------------
+        
+        6. Тоенов всего потрачено: {tokens}, Стоимость всего: {total_cost}$
+
+        """
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(ending_content)
+
+        return True
+    except:
+        logging.error("Error save data 665")
+        return False
 
 
 def main():
-    """Генерирует SEO-текст для страницы сайта"""
 
     # Получение пользовательского запроса
     logging.info("RU: Дайте описание страницы сайта которую нужно сгенерировать:")
@@ -158,8 +199,16 @@ def main():
         answ = DictObj(answer_check)
         acceptance, annotation, tokens, total_cost = answ.acceptance, answ.annotation, answ.tokens + tokens, answ.total_cost + total_cost
 
+        seo_text = clear_dash(seo_text)
+        keywords = json.dumps(keywords, ensure_ascii=False)
+
         if acceptance:
-            return {"Текст прошел проверку. Анотации по нему": annotation, "Полученный текст": {seo_text}, "keywords": {json.dumps(keywords, ensure_ascii=False)}, "description": {description}, "title": {title}, "tokens": tokens, "total_cost": total_cost}
+            if not save_file(annotation, seo_text, keywords, description, title, tokens, total_cost):
+                logging.error("Error save file 54")
+                return False
+            return {"Текст прошел проверку. Анотации по нему": annotation, "Полученный текст": {seo_text}, "keywords": {keywords}, "description": {description}, "title": {title}, "tokens": tokens, "total_cost": total_cost}
+
+
 
         # Добавление запроса пользователя/агента в историю диалога:
         dialog.append({"user": answer_ai})
@@ -171,8 +220,11 @@ def main():
         logging.info(f"Текст не прошел проверку и будет снова переписан: {annotation}")
         
         if i == MAX_ITERATIONS:
-             logging.info(f"Закончились предусмотренные попытки на переписывание текста. Возвращаю последний результат")
-             return {"Текст не прошел модерацию агента, но попытки переписывания закончились, вот последний результат: Анотации": annotation, "Полученный текст": {seo_text}, "keywords": {json.dumps(keywords, ensure_ascii=False)}, "description": {description}, "title": {title}, "tokens": tokens, "total_cost": total_cost}
+            if not save_file(annotation, seo_text, keywords, description, title, tokens, total_cost):
+                logging.error("Error save file 54")
+                return False
+            logging.info(f"Закончились предусмотренные попытки на переписывание текста. Возвращаю последний результат")
+            return {"Текст не прошел модерацию агента, но попытки переписывания закончились, вот последний результат: Анотации": annotation, "Полученный текст": {seo_text}, "keywords": {keywords}, "description": {description}, "title": {title}, "tokens": tokens, "total_cost": total_cost}
 
         
         i += 1
