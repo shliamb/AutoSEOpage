@@ -1,5 +1,4 @@
 /venv
 .env
 /app/test.py
-/app/test_1.py
 /app/__pycache__

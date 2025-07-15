@@ -50,43 +50,74 @@ def clear_dash(text):
 
 
 
-def save_file(annotation, seo_text, keywords, description, title, tokens, total_cost):
+def save_file(
+    annotation: str,
+    seo_text: str,
+    keywords: str,
+    description: str,
+    title: str,
+    tokens: int,
+    total_cost: float
+) -> bool:
+    """
+    Сохраняет сгенерированный SEO-контент в текстовый файл.
+    
+    Args:
+        annotation: Аннотации проверяющего ИИ
+        seo_text: Сгенерированный SEO-текст
+        keywords: Ключевые слова
+        description: Описание страницы
+        title: Заголовок страницы
+        tokens: Количество потраченных токенов
+        total_cost: Общая стоимость генерации
+    
+    Returns:
+        bool: True если файл успешно сохранен, False в противном случае
+    """
     try:
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"{OUTPUT}gen_seo_text_{timestamp}.txt"
-
-        ending_content = f"""
-        Результат генерации контента ИИ ({DEFAULT_MODEL_GEMINI}):
-
-        1. Текст:
-        {seo_text}
-        ------------------------------------------------------
-
-        2. Описание страницы (description):
-        {description}
-        ------------------------------------------------------
-
-        3. Заголовок страницы в браузере (title):
-        {title}
-        ------------------------------------------------------
-
-        4. Ключевые слова (keywords):
-        {keywords}
-        ------------------------------------------------------
-
-        5. Анотации проверяющего ИИ:
-        {annotation}
-        ------------------------------------------------------
+        # Создаем директорию если её нет
+        os.makedirs(OUTPUT, exist_ok=True)
         
-        6. Тоенов всего потрачено: {tokens}, Стоимость всего: {total_cost}$
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = os.path.join(OUTPUT, f"gen_seo_text_{timestamp}.txt")
+        
+        # Используем f-строки для лучшей читаемости
+        content = f"""Результат генерации контента ИИ ({DEFAULT_MODEL_GEMINI}):
 
-        """
+1. Текст:
+{seo_text}
+------------------------------------------------------
+
+2. Описание страницы (description):
+{description}
+------------------------------------------------------
+
+3. Заголовок страницы в браузере (title):
+{title}
+------------------------------------------------------
+
+4. Ключевые слова (keywords):
+{keywords}
+------------------------------------------------------
+
+5. Аннотации проверяющего ИИ:
+{annotation}
+------------------------------------------------------
+
+6. Токенов всего потрачено: {tokens}, Стоимость всего: {total_cost:.4f}$
+"""
+        
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write(ending_content)
-
+            f.write(content)
+        
+        logging.info(f"Файл успешно сохранен: {filename}")
         return True
-    except:
-        logging.error("Error save data 665")
+        
+    except OSError as e:
+        logging.error(f"Ошибка при работе с файлом: {e}")
+        return False
+    except Exception as e:
+        logging.error(f"Неожиданная ошибка при сохранении файла: {e}")
         return False
 
 
