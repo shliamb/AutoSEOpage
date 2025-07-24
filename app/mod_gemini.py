@@ -62,7 +62,18 @@ def ask_gemini(request_data: dict) -> dict:
 
 
 
+# data = {
+#     "question": "Привет как дела?",
+#     "system_content": None,
+#     "tools": None,
+#     "tool_config": None,
+#     "model": "gemini-2.0-flash", #"gemini-2.0-flash", #"gemini-2.0-flash", "gemini-2.5-flash"
+#     "dialog": None#json.dumps(dialog, ensure_ascii=False) if dialog else None,
+# }
 
+
+
+# print(ask_gemini(data))
 
 
 
